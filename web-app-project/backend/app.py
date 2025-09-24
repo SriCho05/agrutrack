@@ -8,7 +8,7 @@ import os
 import google.generativeai as genai
 
 try:
-    from final_sensor_reader import SensorReader, get_sensor_data
+    from final_sensor_reader import SensorReader
     MOCK_MODE = False
 except ImportError:
     MOCK_MODE = True

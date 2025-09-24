@@ -1814,3 +1814,164 @@ body {
     margin-bottom: 2rem !important;
     border: 2px solid orange !important; /* Temporary debug border */
 }
+
+/* Sensor Data Source Indicators */
+.sensor-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.data-source {
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.freshness-indicator {
+    animation: pulse 2s infinite;
+}
+
+.freshness-indicator i {
+    font-size: 0.8rem;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Notification System */
+.notification {
+    transform: translateX(100%);
+    transition: transform 0.3s ease-out;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.notification-close:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Sensor Cards Enhancement */
+.sensor-card {
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sensor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Last Refresh Time Indicator */
+#lastRefreshTime {
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+/* Real-time Data Styling */
+.sensor-card[data-live="true"] {
+    border-left: 4px solid #10b981;
+}
+
+.sensor-card[data-mock="true"] {
+    border-left: 4px solid #f59e0b;
+}
+
+/* Auto-refresh indicator */
+.auto-refresh-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #007bff;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    opacity: 0.8;
+}
+
+.auto-refresh-indicator i {
+    animation: spin 2s linear infinite;
+}
+
+/* Enhanced button states */
+#fetchData:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#fetchData:not(:disabled):hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+}
+
+/* Mobile responsiveness for indicators */
+@media (max-width: 768px) {
+    .freshness-indicator {
+        font-size: 0.65rem;
+        padding: 1px 4px;
+    }
+    
+    .notification {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+    
+    .auto-refresh-indicator {
+        left: 10px;
+        bottom: 10px;
+    }
+}

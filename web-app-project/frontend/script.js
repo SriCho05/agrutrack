@@ -163,18 +163,37 @@ async function fetchSensorData() {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to fetch sensor data');
+            throw new Error(`Server error: ${response.status}`);
         }
 
         const data = await response.json();
         
+        // Check if we got real or mock sensor data
+        const dataSource = data.mock_mode ? 'Mock Data' : 'Real Sensors';
+        
         // Update UI with sensor data
-        updateReadings(data);
+        updateReadings(data, dataSource);
         updateRecommendations(data.recommendations || []);
-        showNotification('Data updated successfully', 'success');
+        
+        // Show success notification with data source info
+        showNotification(`Data updated successfully (${dataSource})`, 'success');
+        
+        // Update last refresh time
+        updateLastRefreshTime();
+        
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Failed to fetch data. Please try again.', 'error');
+        let errorMessage = 'Failed to fetch data. ';
+        
+        if (error.message.includes('Failed to fetch')) {
+            errorMessage += 'Backend server may not be running. Please start the Flask server.';
+        } else if (error.message.includes('Server error: 500')) {
+            errorMessage += 'Sensor reading error. Check sensor connections.';
+        } else {
+            errorMessage += 'Please try again.';
+        }
+        
+        showNotification(errorMessage, 'error');
     } finally {
         updateLoadingStates(false);
     }
@@ -182,36 +201,181 @@ async function fetchSensorData() {
 
 // Update Loading States
 function updateLoadingStates(isLoading) {
-    const elements = ['temperature', 'humidity', 'moisture', 'soilType'];
-    elements.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            if (isLoading) {
-                element.innerHTML = '<div class="loading-spinner"></div>';
-            }
-        }
-    });
-
     const fetchButton = document.getElementById('fetchData');
     if (fetchButton) {
         fetchButton.disabled = isLoading;
-        fetchButton.innerHTML = isLoading ? 
-            '<i class="ri-loader-4-line loading-spinner"></i> Analyzing...' : 
-            '<i class="ri-search-eye-line"></i> Analyze Selected Location';
+        if (isLoading) {
+            fetchButton.innerHTML = '<div class="loading-spinner"></div> Fetching...';
+        } else {
+            fetchButton.innerHTML = '<i class="ri-search-line"></i> Analyze Location';
+        }
     }
+    
+    // Add loading spinners to sensor cards
+    const sensorCards = document.querySelectorAll('.sensor-card');
+    sensorCards.forEach(card => {
+        if (isLoading) {
+            const existingSpinner = card.querySelector('.card-loading-spinner');
+            if (!existingSpinner) {
+                const spinner = document.createElement('div');
+                spinner.className = 'card-loading-spinner';
+                spinner.style.cssText = `
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    z-index: 10;
+                `;
+                spinner.innerHTML = '<div class="loading-spinner"></div>';
+                card.style.position = 'relative';
+                card.appendChild(spinner);
+            }
+        } else {
+            const spinner = card.querySelector('.card-loading-spinner');
+            if (spinner) {
+                spinner.remove();
+            }
+        }
+    });
 }
 
-// Update Sensor Readings
-function updateReadings(data) {
+// Update Sensor Readings with data source indicator
+function updateReadings(data, dataSource = 'Unknown') {
     const tempElement = document.getElementById('temperature');
     const humidElement = document.getElementById('humidity');
     const moistureElement = document.getElementById('moisture');
     const soilElement = document.getElementById('soilType');
 
-    if (tempElement) tempElement.textContent = `${data.temperature}°C`;
-    if (humidElement) humidElement.textContent = `${data.humidity}%`;
-    if (moistureElement) moistureElement.textContent = `${data.moisture_percent}%`;
-    if (soilElement) soilElement.textContent = data.soil_type || 'Unknown';
+    if (tempElement) {
+        tempElement.innerHTML = `
+            <div class="sensor-value">${data.temperature}°C</div>
+            <div class="data-source">${dataSource}</div>
+        `;
+    }
+    if (humidElement) {
+        humidElement.innerHTML = `
+            <div class="sensor-value">${data.humidity}%</div>
+            <div class="data-source">${dataSource}</div>
+        `;
+    }
+    if (moistureElement) {
+        moistureElement.innerHTML = `
+            <div class="sensor-value">${data.moisture_percent}%</div>
+            <div class="data-source">${dataSource}</div>
+        `;
+    }
+    if (soilElement) {
+        soilElement.innerHTML = `
+            <div class="sensor-value">${data.soil_type || 'Unknown'}</div>
+            <div class="data-source">Soil Analysis</div>
+        `;
+    }
+    
+    // Add visual indicator for data freshness
+    addFreshnessIndicator(dataSource === 'Real Sensors');
+}
+
+// Add freshness indicator to show if data is from real sensors
+function addFreshnessIndicator(isRealSensor) {
+    const indicators = document.querySelectorAll('.sensor-card');
+    indicators.forEach(card => {
+        // Remove existing indicators
+        const existingIndicator = card.querySelector('.freshness-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+        
+        // Add new indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'freshness-indicator';
+        indicator.innerHTML = isRealSensor ? 
+            '<i class="ri-wireless-charging-line"></i> Live' : 
+            '<i class="ri-computer-line"></i> Simulated';
+        indicator.style.cssText = `
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 12px;
+            background: ${isRealSensor ? '#10b981' : '#f59e0b'};
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        `;
+        card.style.position = 'relative';
+        card.appendChild(indicator);
+    });
+}
+
+// Update last refresh time
+function updateLastRefreshTime() {
+    const refreshTimeElement = document.getElementById('lastRefreshTime');
+    if (refreshTimeElement) {
+        const now = new Date();
+        refreshTimeElement.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+    } else {
+        // Create refresh time indicator if it doesn't exist
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            const refreshDiv = document.createElement('div');
+            refreshDiv.id = 'lastRefreshTime';
+            refreshDiv.style.cssText = `
+                text-align: center;
+                color: #666;
+                font-size: 0.9rem;
+                margin: 10px 0;
+                padding: 5px;
+            `;
+            refreshDiv.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+            mainContent.insertBefore(refreshDiv, mainContent.firstChild);
+        }
+    }
+}
+
+// Auto-refresh sensor data every 30 seconds if location is set
+function startAutoRefresh() {
+    setInterval(() => {
+        if (latitude && longitude) {
+            console.log('Auto-refreshing sensor data...');
+            fetchSensorData();
+        }
+    }, 30000); // 30 seconds
+}
+
+// Create auto-refresh indicator
+function createAutoRefreshIndicator() {
+    const existing = document.getElementById('autoRefreshIndicator');
+    if (!existing) {
+        const indicator = document.createElement('div');
+        indicator.id = 'autoRefreshIndicator';
+        indicator.className = 'auto-refresh-indicator';
+        indicator.innerHTML = `
+            <i class="ri-refresh-line"></i>
+            <span>Auto-refresh: 30s</span>
+        `;
+        document.body.appendChild(indicator);
+    }
+}
+
+// Check if backend is running and accessible
+async function checkBackendConnection() {
+    try {
+        const response = await fetch('http://localhost:5000/api/health', {
+            method: 'GET',
+            timeout: 5000
+        });
+        
+        if (response.ok) {
+            showNotification('Backend connected successfully', 'success');
+        } else {
+            throw new Error('Backend not responding');
+        }
+    } catch (error) {
+        console.error('Backend connection check failed:', error);
+        showNotification('Backend server not accessible. Please start the Flask server at http://localhost:5000', 'warning');
+    }
 }
 
 // Update Recommendations
@@ -261,11 +425,68 @@ function updateRecommendations(recommendations) {
     container.innerHTML = cropCards;
 }
 
-// Show Notification
+// Enhanced notification system
 function showNotification(message, type = 'info') {
-    // Simple alert for now - you can enhance this later
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(n => n.remove());
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="ri-${getNotificationIcon(type)}"></i>
+            <span>${message}</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="ri-close-line"></i>
+            </button>
+        </div>
+    `;
+    
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 12px 16px;
+        border-radius: 8px;
+        background: ${getNotificationColor(type)};
+        color: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+    
     console.log(`${type.toUpperCase()}: ${message}`);
-    alert(message);
+}
+
+function getNotificationIcon(type) {
+    switch(type) {
+        case 'success': return 'check-circle-line';
+        case 'error': return 'error-warning-line';
+        case 'warning': return 'alert-line';
+        default: return 'information-line';
+    }
+}
+
+function getNotificationColor(type) {
+    switch(type) {
+        case 'success': return '#10b981';
+        case 'error': return '#ef4444';
+        case 'warning': return '#f59e0b';
+        default: return '#3b82f6';
+    }
 }
 
 // Mobile Menu Handling
@@ -294,6 +515,31 @@ function setupMobileMenu() {
             sidebar.classList.remove('active');
         }
     });
+}
+
+// Initialize the dashboard with auto-refresh and real-time features
+function initializeDashboard() {
+    console.log('Initializing AgriTrack Dashboard with real sensor integration...');
+    
+    // Add auto-refresh indicator
+    createAutoRefreshIndicator();
+    
+    // Start auto-refresh if location is already set
+    startAutoRefresh();
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+            e.preventDefault();
+            if (latitude && longitude) {
+                fetchSensorData();
+                showNotification('Refreshing sensor data...', 'info');
+            }
+        }
+    });
+    
+    // Check backend connection on startup
+    checkBackendConnection();
 }
 
 // Initialize everything when DOM is loaded
@@ -343,5 +589,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Start auto-refresh
+    startAutoRefresh();
+
+    // Initialize dashboard
+    initializeDashboard();
+
     console.log('Initialization complete');
 });
+
+// Export functions for external use
+window.AgriTrackDashboard = {
+    fetchSensorData,
+    updateRecommendations,
+    showNotification,
+    checkBackendConnection
+};
