@@ -1,0 +1,7 @@
+Flask
+requests
+Adafruit-DHT
+RPi.GPIO
+adafruit-circuitpython-dht
+flask-cors
+google-generativeai

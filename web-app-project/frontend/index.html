@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgruTrack - Climate Analysis</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 75%, #f5576c 100%); min-height: 100vh;">
+    <div style="display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; overflow: hidden;">
+        <!-- Sidebar -->
+        <aside style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-right: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);">
+            <div style="padding: 2rem 1.5rem; border-bottom: 1px solid rgba(0, 0, 0, 0.1);">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        <i class="ri-plant-line"></i>
+                    </div>
+                    <span style="font-size: 1.5rem; font-weight: 700; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">AgruTrack</span>
+                </div>
+                <button style="display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer;" class="mobile-close">
+                    <i class="ri-close-line"></i>
+                </button>
+            </div>
+
+            <nav style="padding: 1.5rem 0;">
+                <a href="index.html" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; text-decoration: none; color: #667eea; font-weight: 600; transition: all 0.3s ease; border-left: 3px solid #667eea; background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);">
+                    <i class="ri-dashboard-line" style="font-size: 1.25rem;"></i>
+                    <span>Climate Analysis</span>
+                </a>
+                <a href="market-data.html" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.3s ease; border-left: 3px solid transparent;">
+                    <i class="ri-line-chart-line" style="font-size: 1.25rem;"></i>
+                    <span>Market Analysis</span>
+                </a>
+                <a href="crop-library.html" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.3s ease; border-left: 3px solid transparent;">
+                    <i class="ri-brain-line" style="font-size: 1.25rem;"></i>
+                    <span>AI Market Analysis</span>
+                </a>
+                <a href="#" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; text-decoration: none; color: #64748b; font-weight: 500; transition: all 0.3s ease; border-left: 3px solid transparent;">
+                    <i class="ri-history-line" style="font-size: 1.25rem;"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+
+            <div style="position: absolute; bottom: 2rem; width: 250px; padding: 0 1.5rem;">
+                <a href="#" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; text-decoration: none; color: #64748b; font-weight: 500; border-top: 1px solid rgba(0, 0, 0, 0.1);">
+                    <i class="ri-settings-4-line" style="font-size: 1.25rem;"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" style="display: flex; align-items: center; gap: 1rem; padding: 1rem 0; text-decoration: none; color: #64748b; font-weight: 500;">
+                    <i class="ri-question-line" style="font-size: 1.25rem;"></i>
+                    <span>Help Center</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main style="background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); overflow-y: auto;">
+            <!-- Top Bar -->
+            <header style="padding: 1.5rem 2rem; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: space-between;">
+                <button style="display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer;" class="menu-trigger">
+                    <i class="ri-menu-line"></i>
+                </button>
+                
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 400px; background: rgba(255, 255, 255, 0.7); border-radius: 12px; padding: 0.75rem 1rem; border: 1px solid rgba(255, 255, 255, 0.3);">
+                    <i class="ri-search-2-line" style="color: #64748b;"></i>
+                    <input type="text" placeholder="Search locations..." style="border: none; background: none; outline: none; flex: 1; font-size: 0.95rem;">
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button style="padding: 0.75rem; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 10px; cursor: pointer; position: relative;">
+                        <i class="ri-notification-3-line" style="font-size: 1.1rem; color: #64748b;"></i>
+                        <span style="position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span>
+                    </button>
+                    <button style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 500;" id="refreshData">
+                        <i class="ri-refresh-line"></i>
+                        <span>Refresh</span>
+                    </button>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background: rgba(255, 255, 255, 0.7); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3);">
+                        <img src="https://ui-avatars.com/api/?name=Smart+Farmer&background=667eea&color=fff&size=32" style="width: 32px; height: 32px; border-radius: 8px;" alt="Profile">
+                        <div>
+                            <div style="font-size: 0.9rem; font-weight: 600; color: #1e293b;">Smart Farmer</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Agriculture Specialist</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+                <!-- Page Header -->
+                <div style="text-align: center; margin-bottom: 3rem; padding: 2rem 0;">
+                    <div style="display: inline-flex; align-items: center; gap: 1rem; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); padding: 1rem 2rem; border-radius: 20px; margin-bottom: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                            <i class="ri-dashboard-line"></i>
+                        </div>
+                        <div style="text-align: left;">
+                            <h1 style="font-size: 2.5rem; font-weight: 800; color: #1e293b; margin: 0; font-family: 'Poppins', sans-serif;">Climate Analysis</h1>
+                            <div style="font-size: 1rem; color: #667eea; font-weight: 600; margin-top: 0.25rem;">Real-time Environmental Monitoring</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 1.2rem; color: rgba(255, 255, 255, 0.9); max-width: 700px; margin: 0 auto; line-height: 1.6; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                        Monitor environmental conditions and get location-based crop recommendations using IoT sensors and interactive mapping.
+                    </p>
+                </div>
+
+                <!-- Dashboard Grid -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+                    <!-- Sensor Data Panel -->
+                    <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: 24px; padding: 3rem; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 16px 64px rgba(0, 0, 0, 0.1);">
+                        <div style="display: flex; align-items: center; justify-content: between; margin-bottom: 2rem;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                    <i class="ri-sensor-line"></i>
+                                </div>
+                                <div>
+                                    <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Environmental Sensors</h2>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+                                        <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                                        <span style="font-size: 0.9rem; color: #64748b; font-weight: 500;">Live Data</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 16px; padding: 1.5rem; text-align: center; border: 1px solid #0ea5e9;">
+                                <i class="ri-temp-hot-line" style="font-size: 2rem; color: #0ea5e9; margin-bottom: 0.5rem;"></i>
+                                <div style="font-size: 2rem; font-weight: 700; color: #0c4a6e; margin-bottom: 0.25rem;" id="temperature">--°C</div>
+                                <div style="font-size: 0.9rem; color: #0369a1; font-weight: 500;">Temperature</div>
+                                <div style="font-size: 0.8rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; color: #10b981;">
+                                    <i class="ri-arrow-up-line"></i>
+                                    <span>+1.2°C</span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 16px; padding: 1.5rem; text-align: center; border: 1px solid #10b981;">
+                                <i class="ri-water-percent-line" style="font-size: 2rem; color: #10b981; margin-bottom: 0.5rem;"></i>
+                                <div style="font-size: 2rem; font-weight: 700; color: #064e3b; margin-bottom: 0.25rem;" id="humidity">--%</div>
+                                <div style="font-size: 0.9rem; color: #047857; font-weight: 500;">Humidity</div>
+                                <div style="font-size: 0.8rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; color: #ef4444;">
+                                    <i class="ri-arrow-down-line"></i>
+                                    <span>-2%</span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 16px; padding: 1.5rem; text-align: center; border: 1px solid #f59e0b;">
+                                <i class="ri-water-fill" style="font-size: 2rem; color: #f59e0b; margin-bottom: 0.5rem;"></i>
+                                <div style="font-size: 2rem; font-weight: 700; color: #92400e; margin-bottom: 0.25rem;" id="moisture">--%</div>
+                                <div style="font-size: 0.9rem; color: #d97706; font-weight: 500;">Soil Moisture</div>
+                                <div style="font-size: 0.8rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; color: #64748b;">
+                                    <i class="ri-subtract-line"></i>
+                                    <span>Stable</span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); border-radius: 16px; padding: 1.5rem; text-align: center; border: 1px solid #ec4899;">
+                                <i class="ri-earth-line" style="font-size: 2rem; color: #ec4899; margin-bottom: 0.5rem;"></i>
+                                <div style="font-size: 2rem; font-weight: 700; color: #831843; margin-bottom: 0.25rem;" id="soilType">--</div>
+                                <div style="font-size: 0.9rem; color: #be185d; font-weight: 500;">Soil Type</div>
+                                <div style="font-size: 0.8rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; color: #10b981;">
+                                    <i class="ri-checkbox-circle-line"></i>
+                                    <span>Optimal</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Panel -->
+                    <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 16px 64px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column;">
+                        <div style="padding: 2rem 2rem 1rem 2rem; border-bottom: 1px solid rgba(0, 0, 0, 0.1);">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                                <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                    <i class="ri-map-pin-2-line"></i>
+                                </div>
+                                <div>
+                                    <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Location Analysis</h2>
+                                    <div style="font-size: 0.9rem; color: #64748b;">Click on the map to analyze any location</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="height: 300px; width: 100%; position: relative; flex: 1;">
+                            <div id="map" style="height: 100% !important; width: 100% !important;"></div>
+                        </div>
+                        
+                        <div style="padding: 1.5rem 2rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.9rem; color: #64748b;">
+                                <i class="ri-navigation-line"></i>
+                                <span id="coordinates">Select a location on the map</span>
+                            </div>
+                            <button id="fetchData" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem; width: 100%; justify-content: center; font-size: 1rem;" disabled>
+                                <i class="ri-search-eye-line"></i>
+                                Analyze Selected Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations Section -->
+                <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-radius: 24px; padding: 3rem; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 16px 64px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3rem; padding-bottom: 1.5rem; border-bottom: 2px solid #f1f5f9;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                <i class="ri-plant-line"></i>
+                            </div>
+                            <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0;">Crop Recommendations</h2>
+                        </div>
+                        <button style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: rgba(102, 126, 234, 0.1); color: #667eea; border: 1px solid #667eea; border-radius: 10px; cursor: pointer; font-weight: 500;" id="sortBySuitability">
+                            <i class="ri-filter-3-line"></i>
+                            <span>Sort by Suitability</span>
+                        </button>
+                    </div>
+                    
+                    <div id="recommendations" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; min-height: 400px;">
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; text-align: center; grid-column: 1 / -1;">
+                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; border: 2px solid #10b981;">
+                                <i class="ri-seedling-line" style="font-size: 4rem; color: #059669;"></i>
+                            </div>
+                            <h3 style="color: #1e293b; font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">Get Personalized Recommendations</h3>
+                            <p style="color: #6b7280; font-size: 1.1rem; line-height: 1.6; max-width: 500px; margin: 0;">Select a location on the map to receive crop recommendations based on environmental conditions and soil analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        /* Focus states for inputs */
+        input:focus {
+            outline: none !important;
+            border-color: #667eea !important;
+            background: white !important;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+            transform: translateY(-1px);
+        }
+
+        /* Button hover effects */
+        button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5) !important;
+        }
+
+        button:disabled {
+            opacity: 0.6 !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+        }
+
+        /* Sidebar hover effects */
+        aside a:hover {
+            color: #667eea !important;
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%) !important;
+            border-left-color: #667eea !important;
+        }
+
+        /* Pulse animation for live indicator */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body > div {
+                grid-template-columns: 1fr !important;
+            }
+            
+            aside {
+                position: fixed !important;
+                top: 0 !important;
+                left: -280px !important;
+                width: 280px !important;
+                height: 100vh !important;
+                z-index: 1000 !important;
+                transition: left 0.3s ease !important;
+            }
+            
+            aside.active {
+                left: 0 !important;
+            }
+            
+            .menu-trigger,
+            .mobile-close {
+                display: block !important;
+            }
+        }
+    </style>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
