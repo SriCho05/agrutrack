@@ -385,38 +385,102 @@ function updateRecommendations(recommendations) {
     
     if (!recommendations || recommendations.length === 0) {
         container.innerHTML = `
-            <div class="empty-state">
-                <i class="ri-seedling-line"></i>
-                <h3>No Recommendations Available</h3>
-                <p>Unable to generate crop recommendations for this location</p>
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 2rem; text-align: center; grid-column: 1 / -1;">
+                <div style="width: 120px; height: 120px; background: linear-gradient(135d, #fef3c7 0%, #fde68a 100%); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin-bottom: 2rem; border: 2px solid #f59e0b;">
+                    <i class="ri-plant-line" style="font-size: 4rem; color: #d97706;"></i>
+                </div>
+                <h3 style="color: #1e293b; font-size: 1.5rem; margin-bottom: 1rem; font-weight: 700;">No Recommendations Available</h3>
+                <p style="color: #6b7280; font-size: 1.1rem; line-height: 1.6;">Unable to generate crop recommendations for this location. Please try selecting a different area.</p>
             </div>
         `;
         return;
     }
 
-    // Create crop cards using the new structure
+    // Create crop cards with improved formatting
     const cropCards = recommendations.map(crop => {
-        const suitabilityClass = crop.suitability >= 80 ? 'suitability-high' : 
-                                crop.suitability >= 60 ? 'suitability-medium' : 'suitability-low';
+        // Determine suitability styling based on text value
+        let suitabilityClass, suitabilityIcon, suitabilityColor;
+        switch(crop.suitability?.toLowerCase()) {
+            case 'high':
+                suitabilityClass = 'suitability-high';
+                suitabilityIcon = 'ri-checkbox-circle-fill';
+                suitabilityColor = '#10b981';
+                break;
+            case 'medium':
+                suitabilityClass = 'suitability-medium';
+                suitabilityIcon = 'ri-checkbox-circle-line';
+                suitabilityColor = '#f59e0b';
+                break;
+            case 'low':
+                suitabilityClass = 'suitability-low';
+                suitabilityIcon = 'ri-information-line';
+                suitabilityColor = '#ef4444';
+                break;
+            default:
+                suitabilityClass = 'suitability-unknown';
+                suitabilityIcon = 'ri-question-line';
+                suitabilityColor = '#6b7280';
+        }
         
         return `
-            <div class="crop-card">
-                <div class="crop-header">
-                    <div class="crop-name">${crop.name}</div>
-                    <div class="suitability-badge ${suitabilityClass}">${crop.suitability}%</div>
-                </div>
-                <div class="crop-details">
-                    <div class="detail-item">
-                        <i class="ri-time-line"></i>
-                        <span>${crop.growthTime} days</span>
+            <div style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; overflow: hidden;" class="crop-card" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 16px 48px rgba(0, 0, 0, 0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 32px rgba(0, 0, 0, 0.1)'">
+                
+                <!-- Background Pattern -->
+                <div style="position: absolute; top: 0; right: 0; width: 100px; height: 100px; background: linear-gradient(135deg, ${suitabilityColor}20 0%, transparent 100%); border-radius: 0 20px 0 100px;"></div>
+                
+                <!-- Crop Header -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; position: relative; z-index: 2;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 48px; height: 48px; background: linear-gradient(135deg, ${suitabilityColor} 0%, ${suitabilityColor}cc 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                            <i class="ri-seedling-line"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">${crop.name}</h3>
+                            <div style="font-size: 0.9rem; color: #64748b; margin-top: 0.25rem;">Agricultural Crop</div>
+                        </div>
                     </div>
-                    <div class="detail-item">
-                        <i class="ri-plant-line"></i>
-                        <span>Growth Period</span>
+                    
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: ${suitabilityColor}15; border: 1px solid ${suitabilityColor}40; border-radius: 12px; color: ${suitabilityColor};">
+                        <i class="${suitabilityIcon}" style="font-size: 1rem;"></i>
+                        <span style="font-weight: 600; font-size: 0.9rem;">${crop.suitability} Suitability</span>
                     </div>
                 </div>
-                <div class="care-instructions">
-                    ${crop.care_instructions}
+                
+                <!-- Growth Information -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; position: relative; z-index: 2;">
+                    <div style="background: rgba(102, 126, 234, 0.1); border-radius: 12px; padding: 1rem; text-align: center; border: 1px solid rgba(102, 126, 234, 0.2);">
+                        <i class="ri-time-line" style="font-size: 1.5rem; color: #667eea; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #1e293b;">${crop.growthTime}</div>
+                        <div style="font-size: 0.8rem; color: #667eea; font-weight: 500; margin-top: 0.25rem;">Growth Period</div>
+                    </div>
+                    
+                    <div style="background: rgba(16, 185, 129, 0.1); border-radius: 12px; padding: 1rem; text-align: center; border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <i class="ri-plant-line" style="font-size: 1.5rem; color: #10b981; margin-bottom: 0.5rem;"></i>
+                        <div style="font-size: 1.1rem; font-weight: 700; color: #1e293b;">Recommended</div>
+                        <div style="font-size: 0.8rem; color: #10b981; font-weight: 500; margin-top: 0.25rem;">For Your Area</div>
+                    </div>
+                </div>
+                
+                <!-- Care Instructions -->
+                <div style="position: relative; z-index: 2;">
+                    <h4 style="font-size: 1rem; font-weight: 600; color: #1e293b; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="ri-lightbulb-line" style="color: #f59e0b;"></i>
+                        Care Instructions
+                    </h4>
+                    <p style="font-size: 0.9rem; color: #64748b; line-height: 1.6; margin: 0; background: rgba(248, 250, 252, 0.8); padding: 1rem; border-radius: 10px; border-left: 3px solid ${suitabilityColor};">
+                        ${crop.care_instructions}
+                    </p>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem; position: relative; z-index: 2;">
+                    <button style="flex: 1; padding: 0.75rem 1rem; background: linear-gradient(135deg, ${suitabilityColor} 0%, ${suitabilityColor}cc 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <i class="ri-information-line"></i>
+                        <span>Learn More</span>
+                    </button>
+                    <button style="padding: 0.75rem; background: rgba(102, 126, 234, 0.1); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 10px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(102, 126, 234, 0.2)'" onmouseout="this.style.background='rgba(102, 126, 234, 0.1)'">
+                        <i class="ri-bookmark-line"></i>
+                    </button>
                 </div>
             </div>
         `;

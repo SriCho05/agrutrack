@@ -5,3 +5,4 @@ RPi.GPIO
 adafruit-circuitpython-dht
 flask-cors
 google-generativeai
+pandas

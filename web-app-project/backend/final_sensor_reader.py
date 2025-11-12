@@ -27,16 +27,40 @@ class SensorReader:
         return False
     
     def setup_gpio(self):
-        """Setup GPIO for moisture sensor"""
+        """Setup GPIO for moisture sensor with better error handling"""
         try:
             import RPi.GPIO as GPIO
+            
+            # Clean up any existing GPIO setup first
+            GPIO.cleanup()
+            
+            # Set GPIO mode
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup(self.moisture_pin, GPIO.IN)
-            self.gpio_available = True
-            print("GPIO initialized successfully")
-            return True
+            
+            # Set up moisture sensor pin with proper error handling
+            try:
+                GPIO.setup(self.moisture_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+                self.gpio_available = True
+                print("GPIO initialized successfully")
+                return True
+            except Exception as setup_error:
+                print(f"GPIO setup error for pin {self.moisture_pin}: {setup_error}")
+                # Try without pull-up resistor
+                try:
+                    GPIO.setup(self.moisture_pin, GPIO.IN)
+                    self.gpio_available = True
+                    print("GPIO initialized successfully (without pull-up)")
+                    return True
+                except Exception as fallback_error:
+                    print(f"GPIO fallback setup failed: {fallback_error}")
+                    return False
+                    
         except Exception as e:
             print(f"GPIO not available: {e}")
+            print("This might be due to:")
+            print("1. Not running on Raspberry Pi")
+            print("2. Insufficient GPIO permissions")
+            print("3. GPIO already in use by another process")
             return False
     
     def read_moisture(self):
@@ -54,35 +78,92 @@ class SensorReader:
             return None, None
     
     def read_dht22(self):
-        """Read DHT22 sensor with multiple approaches"""
+        """Read DHT22 sensor with multiple approaches and better error handling"""
+        # Method 1: Try lgpio (modern approach)
+        try:
+            import lgpio
+            # Open GPIO chip
+            chip = lgpio.gpiochip_open(0)
+            
+            # This is a simplified approach - actual DHT22 reading with lgpio is complex
+            # For now, we'll skip this and try other methods
+            lgpio.gpiochip_close(chip)
+        except Exception as e:
+            print(f"lgpio method failed: {e}")
+        
+        # Method 2: Try Adafruit_DHT library
         try:
             import Adafruit_DHT as dht
-            humidity, temperature = dht.read_retry(dht.DHT22, self.dht_pin)
+            humidity, temperature = dht.read_retry(dht.DHT22, self.dht_pin, retries=3, delay_seconds=1)
             if humidity is not None and temperature is not None:
                 self.dht_available = True
+                print(f"DHT22 reading successful via Adafruit_DHT: {temperature:.1f}°C, {humidity:.1f}%")
                 return humidity, temperature
-        except:
-            pass
+            else:
+                print("DHT22 Adafruit_DHT method returned None values")
+        except ImportError:
+            print("Adafruit_DHT library not available")
+        except Exception as e:
+            print(f"Adafruit_DHT method failed: {e}")
             
+        # Method 3: Try adafruit-circuitpython-dht
         try:
             import adafruit_dht
             import board
-            dht_device = adafruit_dht.DHT22(board.D4)
-            temperature = dht_device.temperature
-            humidity = dht_device.humidity
-            if humidity is not None and temperature is not None:
-                self.dht_available = True
-                return humidity, temperature
-        except:
-            pass
             
+            # Create DHT22 object
+            dht_device = adafruit_dht.DHT22(board.D4)
+            
+            # Try to read with retries
+            for attempt in range(3):
+                try:
+                    temperature = dht_device.temperature
+                    humidity = dht_device.humidity
+                    
+                    if humidity is not None and temperature is not None:
+                        self.dht_available = True
+                        print(f"DHT22 reading successful via CircuitPython: {temperature:.1f}°C, {humidity:.1f}%")
+                        dht_device.exit()
+                        return humidity, temperature
+                    else:
+                        print(f"DHT22 attempt {attempt + 1}: Got None values")
+                        time.sleep(2)
+                        
+                except RuntimeError as e:
+                    print(f"DHT22 attempt {attempt + 1} failed: {e}")
+                    time.sleep(2)
+            
+            # Clean up
+            dht_device.exit()
+            
+        except ImportError:
+            print("adafruit-circuitpython-dht library not available")
+        except Exception as e:
+            print(f"CircuitPython DHT method failed: {e}")
+        
+        # Method 4: Try alternative GPIO approach
         try:
-            import random
-            temperature = round(20.0 + random.uniform(-2, 2), 1)
-            humidity = round(45.0 + random.uniform(-5, 5), 1)
-            return humidity, temperature
-        except:
-            return None, None
+            import RPi.GPIO as GPIO
+            print("Attempting direct GPIO bit-banging for DHT22 (this may not work reliably)")
+            # Note: Direct bit-banging for DHT22 is complex and unreliable
+            # We'll skip this for now
+        except Exception as e:
+            print(f"Direct GPIO approach failed: {e}")
+            
+        # Method 5: Fallback to simulated data with warning
+        print("All DHT22 reading methods failed. Using simulated sensor data.")
+        print("This could be due to:")
+        print("1. DHT22 sensor not connected to GPIO 4")
+        print("2. Insufficient GPIO permissions (try running with sudo)")
+        print("3. GPIO conflicts with other processes")
+        print("4. Hardware issues with the DHT22 sensor")
+        
+        # Generate realistic simulated data
+        import random
+        temperature = round(20.0 + random.uniform(-2, 2), 1)
+        humidity = round(45.0 + random.uniform(-5, 5), 1)
+        print(f"Using simulated data: {temperature:.1f}°C, {humidity:.1f}%")
+        return humidity, temperature
 
     def get_soil_type(self, latitude, longitude):
         """Fetch soil type data from the Soil API (SoilGrids)"""

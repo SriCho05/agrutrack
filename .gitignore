@@ -23,6 +23,8 @@ MANIFEST
 
 # Virtual Environment
 sensor_env/
+agritrack_env/
+web-app-project/agritrack_env/
 venv/
 env/
 ENV/
@@ -54,3 +56,9 @@ node_modules/
 # Temporary files
 *.tmp
 *.temp
+
+# Zip files (bundles)
+*.zip
+
+# Large binary files (keep model files but exclude bundles)
+web-app-project/pi_bundle*.zip

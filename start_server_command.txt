@@ -1,0 +1,1 @@
+cd /home/srikaanth/Documents/agrutrack/web-app-project/backend && /home/srikaanth/Documents/agrutrack/sensor_env/bin/python app.py
